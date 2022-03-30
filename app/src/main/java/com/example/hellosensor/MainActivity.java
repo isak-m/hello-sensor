@@ -1,9 +1,11 @@
 package com.example.hellosensor;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -11,12 +13,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                openNewActivity();
-            }
-        });
     }
+
+    /** Called when user taps the accelerometer button **/
+    public void enterAccelerometer(View view){
+        // Enter code to enter accelerometer activity
+        Intent intent = new Intent(this, AccelerometerActivity.class);
+        startActivity(intent);
+    }
+
+    /** Called when user taps the Compass button **/
+    public void enterCompass(View view){
+        Intent intent = new Intent(this, CompassActivity.class);
+        startActivity(intent);
+    }
+
 }
