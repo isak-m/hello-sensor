@@ -6,9 +6,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.widget.TextView;
 import android.widget.ImageView;
 
@@ -23,10 +24,8 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     private float[] magReadings = new float[3];
     private float[] rotationMatrix = new float[9];
     private float[] orientationAngles = new float[3];
-    private float startDegrees = 0f;
-    private float currentDegrees = 0f;
-    private double[] recentReadings = new double[5];
     private static final float ALPHA = 0.1f;
+    private boolean entering = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,20 +59,14 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
             return;
         }
         if(event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-            //for(int i = 0; i < 3; i++){
-            //    accReadings[i] = event.values[i];
-            //}
             accReadings = applyLowPassFilter(event.values, accReadings);
         } else if (event.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD){
-            //for(int i = 0; i < 3; i++){
-            //    magReadings[i] = event.values[i];
-            //}
             magReadings = applyLowPassFilter(event.values, magReadings);
         }
         updateOrientationAngles();
     }
 
-
+    // https://www.raywenderlich.com/10838302-sensors-tutorial-for-android-getting-started
     private String getDirection(double angle){
         StringBuilder direction = new StringBuilder();
 
@@ -104,6 +97,7 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         return direction.toString();
     }
 
+    // https://www.raywenderlich.com/10838302-sensors-tutorial-for-android-getting-started
     private void updateOrientationAngles(){
         mSensorManager.getRotationMatrix(rotationMatrix, null, accReadings, magReadings);
         float[] orientation = SensorManager.getOrientation(rotationMatrix, orientationAngles);
@@ -111,31 +105,18 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         double angle = Math.round(degrees * 100) / 100;
         String direction = getDirection(degrees);
         dTV.setText(angle + " degrees " + direction);
+        if(direction.equals("N")){
+            if(entering){
+                vibrate();
+                entering = false;
+            }
+        } else {
+            entering = true;
+        }
         cIV.setRotation((float) angle * -1);
     }
 
-    /**
-     * Moving average filter - jobbar med grader, men borde jobba med radianer eller något så att den inte ballar ur vid när den korsar 0/360 grader strecket
-     * **/
-    private double maFilter(double degrees){
-        double sin = 0;
-        double cos = 0;
-        for(int i = recentReadings.length - 1; i > 0; i--){
-            // update recent recentReadings
-            recentReadings[i] = recentReadings[i-1];
-        }
-        recentReadings[0] = degrees;
-        for(double ang : recentReadings){
-            //sum += ang;
-            sin += Math.sin(ang);
-            cos += Math.cos(ang);
-        }
-        double avSin = sin / recentReadings.length;
-        double avCos = cos / recentReadings.length;
-        double average = Math.atan(sin/cos);
-        return average;
-    }
-
+    // https://stackoverflow.com/questions/27846604/how-to-get-smooth-orientation-data-in-android
     private float[] applyLowPassFilter(float[] input, float[] output) {
         if ( output == null ) return input;
 
@@ -145,7 +126,14 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         return output;
     }
 
-
+    // https://stackoverflow.com/questions/13950338/how-to-make-an-android-device-vibrate-with-different-frequency
+    private void vibrate() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(VibrationEffect.createOneShot(150, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            ((Vibrator) getSystemService(VIBRATOR_SERVICE)).vibrate(150);
+        }
+    }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
