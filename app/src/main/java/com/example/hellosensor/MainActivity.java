@@ -1,8 +1,6 @@
 package com.example.hellosensor;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.view.View;
 import android.content.Intent;

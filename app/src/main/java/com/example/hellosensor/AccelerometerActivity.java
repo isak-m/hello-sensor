@@ -2,12 +2,10 @@ package com.example.hellosensor;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.Sensor;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.os.Bundle;
 
@@ -20,7 +18,7 @@ public class AccelerometerActivity extends AppCompatActivity implements SensorEv
     private TextView zTV;
     private TextView tiltTV;
     private float[] accReadings = new float[3];
-    private static final float ALPHA = 0.2f;
+    private static final float ALPHA = 0.5f;
     private ConstraintLayout bg;
 
     @Override
